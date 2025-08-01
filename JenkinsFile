@@ -43,8 +43,6 @@ password = "${SNOWFLAKE_PASSWORD}"
 role = "${SF_ROLE}"
 warehouse = "${SF_WAREHOUSE}"
 database = "${SF_DATABASE}"
-schema = "SCHEMACHANGE"
-change_history_table = "${SF_DATABASE}.SCHEMACHANGE.CHANGE_HISTORY"
 EOF
                 '''
             }
@@ -68,6 +66,7 @@ EOF
                     schemachange -f migrations \
                         --connection-name Connection_1 \
                         --connections-file-path connections.toml \
+                        -c ${SF_DATABASE}.SCHEMACHANGE.CHANGE_HISTORY \
                         --create-change-history-table
                 '''
             }
