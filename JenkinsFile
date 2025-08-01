@@ -33,7 +33,7 @@ pipeline {
                     pip install --upgrade schemachange
 
                     cat > connections.toml << EOF
-[connections.Connection_1]
+[Connection_1]
 account = "${SF_ACCOUNT}"
 user = "${SF_USERNAME}"
 password = "${SNOWFLAKE_PASSWORD}"
