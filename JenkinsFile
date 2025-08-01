@@ -3,14 +3,28 @@ pipeline {
         docker { 
             image "python:3.8"
             args '--user 0:0'
-        } 
-
+        }
+    }
+    environment {
+        SNOWFLAKE_PASSWORD = credentials('SF_PASSWORD_SECRET') // Usa tus credenciales seguras
     }
     stages {
         stage('Run schemachange') {
             steps {
-                sh "pip install schemachange --upgrade"
-                sh "schemachange -f migrations -a ${SF_ACCOUNT} -u ${SF_USERNAME} -r ${SF_ROLE} -w ${SF_WAREHOUSE} -d ${SF_DATABASE} -c ${SF_DATABASE}.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table"
+                sh '''
+                    pip install schemachange --upgrade
+
+                    echo "[connections.Connection_1]" > connections.toml
+                    echo "account = \\"${SF_ACCOUNT}\\"" >> connections.toml
+                    echo "user = \\"${SF_USERNAME}\\"" >> connections.toml
+                    echo "role = \\"${SF_ROLE}\\"" >> connections.toml
+                    echo "warehouse = \\"${SF_WAREHOUSE}\\"" >> connections.toml
+                    echo "database = \\"${SF_DATABASE}\\"" >> connections.toml
+                    echo "schema = \\"SCHEMACHANGE\\"" >> connections.toml
+                    echo "change_history_table = \\"${SF_DATABASE}.SCHEMACHANGE.CHANGE_HISTORY\\"" >> connections.toml
+
+                    schemachange -f migrations --connection-name Connection_1 --create-change-history-table
+                '''
             }
         }
     }
