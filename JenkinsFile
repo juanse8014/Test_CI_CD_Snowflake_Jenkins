@@ -6,7 +6,6 @@ pipeline {
         }
     }
 
-    // Definir todos los parámetros requeridos
     parameters {
         string(name: 'SF_ACCOUNT', description: 'Snowflake account (e.g. xy12345.region.azure)')
         string(name: 'SF_USERNAME', description: 'Snowflake user')
@@ -17,7 +16,6 @@ pipeline {
     }
 
     environment {
-        // Estas se toman automáticamente desde los parámetros
         SF_ACCOUNT   = "${params.SF_ACCOUNT}"
         SF_USERNAME  = "${params.SF_USERNAME}"
         SF_ROLE      = "${params.SF_ROLE}"
@@ -27,13 +25,18 @@ pipeline {
     }
 
     stages {
-        stage('Run schemachange') {
+
+        stage('Instalar schemachange') {
+            steps {
+                sh 'pip install --upgrade schemachange'
+            }
+        }
+
+        stage('Crear archivo connections.toml') {
             steps {
                 sh '''
-                    pip install --upgrade schemachange
-
                     cat > connections.toml << EOF
-[Connection_1]
+[connections.Connection_1]
 account = "${SF_ACCOUNT}"
 user = "${SF_USERNAME}"
 password = "${SNOWFLAKE_PASSWORD}"
@@ -43,8 +46,29 @@ database = "${SF_DATABASE}"
 schema = "SCHEMACHANGE"
 change_history_table = "${SF_DATABASE}.SCHEMACHANGE.CHANGE_HISTORY"
 EOF
+                '''
+            }
+        }
 
-                    schemachange -f migrations --connection-name Connection_1 --connections-file-path connections.toml --create-change-history-table
+        stage('Mostrar connections.toml') {
+            steps {
+                sh 'cat connections.toml'
+            }
+        }
+
+        stage('Ajustar permisos del archivo') {
+            steps {
+                sh 'chmod 600 connections.toml'
+            }
+        }
+
+        stage('Ejecutar schemachange') {
+            steps {
+                sh '''
+                    schemachange -f migrations \
+                        --connection-name Connection_1 \
+                        --connections-file-path connections.toml \
+                        --create-change-history-table
                 '''
             }
         }
