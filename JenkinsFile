@@ -6,13 +6,17 @@ pipeline {
         }
     }
 
+    parameters {
+        password(name: 'SNOWFLAKE_PASSWORD', defaultValue: '', description: 'Snowflake password')
+    }
+
     environment {
-        SF_ACCOUNT         = 'tu-cuenta.snowflakecomputing.com'
-        SF_USERNAME        = 'USUARIO_EJEMPLO'
-        SF_ROLE            = 'SYSADMIN'
-        SF_WAREHOUSE       = 'COMPUTE_WH'
-        SF_DATABASE        = 'DEMO_DB'
-        SNOWFLAKE_PASSWORD = credentials('SNOWFLAKE_PASSWORD')
+        SF_ACCOUNT   = 'tu-cuenta.snowflakecomputing.com'
+        SF_USERNAME  = 'TU_USUARIO'
+        SF_ROLE      = 'SYSADMIN'
+        SF_WAREHOUSE = 'COMPUTE_WH'
+        SF_DATABASE  = 'DEMO_DB'
+        SNOWFLAKE_PASSWORD = "${params.SNOWFLAKE_PASSWORD}"
     }
 
     stages {
@@ -33,8 +37,7 @@ schema = "SCHEMACHANGE"
 change_history_table = "${SF_DATABASE}.SCHEMACHANGE.CHANGE_HISTORY"
 EOF
 
-                    # Usa solo el nombre del archivo, sin ruta absoluta
-                    schemachange -f migrations --connections-file-path connections.toml --connection-name Connection_1 --create-change-history-table
+                    schemachange -f migrations --connection-name Connection_1 --connections-file-path connections.toml --create-change-history-table
                 '''
             }
         }
