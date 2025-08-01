@@ -6,7 +6,7 @@ pipeline {
         }
     }
     environment {
-        SNOWFLAKE_PASSWORD = credentials('SF_PASSWORD_SECRET') // Usa tus credenciales seguras
+        SNOWFLAKE_PASSWORD = credentials('SNOWFLAKE_PASSWORD') // Usa tus credenciales seguras
     }
     stages {
         stage('Run schemachange') {
