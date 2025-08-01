@@ -1,28 +1,38 @@
 pipeline {
-    agent { 
-        docker { 
-            image "python:3.8"
+    agent {
+        docker {
+            image 'python:3.8'
             args '--user 0:0'
         }
     }
+
     environment {
-        SNOWFLAKE_PASSWORD = credentials('SNOWFLAKE_PASSWORD') // Usa tus credenciales seguras
+        // ← Asegúrate de tener este ID como credencial en Jenkins (Secret Text)
+        SNOWFLAKE_PASSWORD = credentials('SNOWFLAKE_PASSWORD')
+        SF_ACCOUNT = 'NGQWTAS-AYC38906'
+        SF_USERNAME = 'SEBASTIANNAVARRETE'
+        SF_ROLE = 'SYSADMIN'
+        SF_WAREHOUSE = 'COMPUTE_WH'
+        SF_DATABASE = 'DEMO_DB'
     }
+
     stages {
         stage('Run schemachange') {
             steps {
                 sh '''
                     pip install schemachange --upgrade
-
-                    echo "[connections.Connection_1]" > connections.toml
-                    echo "account = \\"${SF_ACCOUNT}\\"" >> connections.toml
-                    echo "user = \\"${SF_USERNAME}\\"" >> connections.toml
-                    echo "role = \\"${SF_ROLE}\\"" >> connections.toml
-                    echo "warehouse = \\"${SF_WAREHOUSE}\\"" >> connections.toml
-                    echo "database = \\"${SF_DATABASE}\\"" >> connections.toml
-                    echo "password = SNOWFLAKE_PASSWORD" >> connections.toml
-                    echo "schema = \\"SCHEMACHANGE\\"" >> connections.toml
-                    echo "change_history_table = \\"${SF_DATABASE}.SCHEMACHANGE.CHANGE_HISTORY\\"" >> connections.toml
+                    
+                    cat > connections.toml << EOF
+[connections.Connection_1]
+account = "${SF_ACCOUNT}"
+user = "${SF_USERNAME}"
+password = "${SNOWFLAKE_PASSWORD}"
+role = "${SF_ROLE}"
+warehouse = "${SF_WAREHOUSE}"
+database = "${SF_DATABASE}"
+schema = "SCHEMACHANGE"
+change_history_table = "${SF_DATABASE}.SCHEMACHANGE.CHANGE_HISTORY"
+EOF
 
                     schemachange -f migrations --connection-name Connection_1 --create-change-history-table
                 '''
