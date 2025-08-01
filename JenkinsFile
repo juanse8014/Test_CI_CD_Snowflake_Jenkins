@@ -10,7 +10,7 @@ pipeline {
         stage('Run schemachange') {
             steps {
                 sh 'pip install schemachange --upgrade'
-                sh 'schemachange -f migrations --connections-file-path /var/jenkins_home/workspace/snowflake-devops-demo/connections.toml --connection-name Connection_1 -c DEMO_DB.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table'
+                sh 'schemachange -f migrations --connections-file-path /var/jenkins_home/workspace/snowflake-devops-demo/ --connection-name Connection_1 -c DEMO_DB.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table'
             }
         }
     }
