@@ -6,16 +6,23 @@ pipeline {
         }
     }
 
+    // Definir todos los parámetros requeridos
     parameters {
-        password(name: 'SNOWFLAKE_PASSWORD', defaultValue: '', description: 'Snowflake password')
+        string(name: 'SF_ACCOUNT', description: 'Snowflake account (e.g. xy12345.region.azure)')
+        string(name: 'SF_USERNAME', description: 'Snowflake user')
+        password(name: 'SNOWFLAKE_PASSWORD', description: 'Snowflake password')
+        string(name: 'SF_ROLE', defaultValue: 'SYSADMIN', description: 'Snowflake role')
+        string(name: 'SF_WAREHOUSE', defaultValue: 'COMPUTE_WH', description: 'Snowflake warehouse')
+        string(name: 'SF_DATABASE', defaultValue: 'DEMO_DB', description: 'Snowflake database')
     }
 
     environment {
-        SF_ACCOUNT   = 'tu-cuenta.snowflakecomputing.com'
-        SF_USERNAME  = 'TU_USUARIO'
-        SF_ROLE      = 'SYSADMIN'
-        SF_WAREHOUSE = 'COMPUTE_WH'
-        SF_DATABASE  = 'DEMO_DB'
+        // Estas se toman automáticamente desde los parámetros
+        SF_ACCOUNT   = "${params.SF_ACCOUNT}"
+        SF_USERNAME  = "${params.SF_USERNAME}"
+        SF_ROLE      = "${params.SF_ROLE}"
+        SF_WAREHOUSE = "${params.SF_WAREHOUSE}"
+        SF_DATABASE  = "${params.SF_DATABASE}"
         SNOWFLAKE_PASSWORD = "${params.SNOWFLAKE_PASSWORD}"
     }
 
@@ -23,7 +30,7 @@ pipeline {
         stage('Run schemachange') {
             steps {
                 sh '''
-                    pip install schemachange --upgrade
+                    pip install --upgrade schemachange
 
                     cat > connections.toml << EOF
 [connections.Connection_1]
